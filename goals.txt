@@ -28,6 +28,30 @@ Entities: [ 3rd_party_app_aka_client,
        Client ----> (E) Access_Token          ---->  resource_server
        Client <---- (F) Protected_Resource    ---->  resource_server
       ------------------------------------------------------------------
+      
+      
+      
+      
+     +--------+                               +---------------+
+     |        |--(A)- Authorization Request ->|   Resource    |
+     |        |                               |     Owner     |
+     |        |<-(B)-- Authorization Grant ---|               |
+     |        |                               +---------------+
+     |        |
+     |        |                               +---------------+
+     |        |--(C)-- Authorization Grant -->| Authorization |
+     | Client |                               |     Server    |
+     |        |<-(D)----- Access Token -------|               |
+     |        |                               +---------------+
+     |        |
+     |        |                               +---------------+
+     |        |--(E)----- Access Token ------>|    Resource   |
+     |        |                               |     Server    |
+     |        |<-(F)--- Protected Resource ---|               |
+     +--------+                               +---------------+
+     
+     
+     
 
 Old-way:
 
