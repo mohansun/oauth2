@@ -1,0 +1,135 @@
+OAuth2.0 -- Authorization framework
+
+Entities: [ 3rd_party_app_aka_client, 
+            HTTP_service_aka_resource_server, 
+            resource_owner,
+
+            authorization_server
+ 
+          ]
+ 
+  - Enables 3rd_party_app_aka_client to obtain limited access to:
+      -- HTTP_service_aka_resource_server
+
+    on behalf of the resource_owner by orchestrating an approval interaction
+    between:
+             resource_owner and HTTP_service_aka_resource_server: 
+      
+      ------------------------FLOW--------------------------------------- 
+       Client ----> (A) Authorization_Request   ---->  resource_owner
+       Client <---- (B) Authorization_Grant     <----  resource_owner
+       
+--- 
+       Client ----> (C) (Authorization_Grant, Client_Credientials)
+                                              ---->  authorization_server
+       Client <---- (D) Access_Token          <----  authorization_server
+
+--- 
+       Client ----> (E) Access_Token          ---->  resource_server
+       Client <---- (F) Protected_Resource    ---->  resource_server
+      ------------------------------------------------------------------
+
+Old-way:
+
+--NOT-SAFE-- ( APP has access to all the data on the service ) 
+
+   3rd_party_app_aka_client ---->Give-me-un-pwd--->    resource_owner
+   3rd_party_app_aka_client ---->here-is-un-pwd--->    resource_server
+
+Lesson: 3rd_party_app_aka_client should never ask un/pwd of the resource_owner
+
+What is required is:
+  Special-Key (Access_Token) : which allows access to a limited set of data in resource_server
+  Access_Token that resource_owner let the 3rd_party_app_aka_client acquire and use without the use of their un/pwd.
+
+ This requires: everyone has to confirm that everyone else is: who they say they are
+
+=========- Python -================
+Entities: [ Credentials, Storage, Flow ]
+
+The key is held in Credentials object
+All the steps need to get the Credentials is in Flow object
+Credentials is stored in Storage object for store and retrieve.
+
+Flow --> Credentials --> Storage
+
+3rd_party_app_aka_client ---> get_Credentials  ---> Storage
+
+
+#------------- code ---------
+from oauth2client.client import OAuth2WebServerFlow
+import httplib2
+#from oauth2client.file import Storage
+#from oauth2client.keyring_strorage import Storage
+
+Flow = OAuth2WebServerFlow (
+         # client_id and client_secret are provided the resource_server
+         # when 3rd_party_app_aka_client registers it
+         client_id     = 'CLIENT_ID_HERE',
+         client_secret = 'CLIENT_SECRET_HERE,
+
+         redirect_uri  = 'https://.../oauth2callback',
+         scope         = 'https://.../todolist',
+         user_agent    = 'great-app/1.0'
+)
+
+#--- kick off the Flow
+authorize_url = Flow.step1_get_authorize_url()
+self.redirect( authorize_url )
+
+#--- get the Credentials
+credentials = flow.step2_exchange(self.request.params)
+
+#--- save that Credentials in Storage
+user = users.get_current_user()
+storage = StorageByKeyName( Credentials,
+                            user.user_id(),
+                            'credentials'
+)
+
+storage.put(credentials)
+
+#--- using Credentials
+# retrive from Storage 
+credentials = storage(get)
+# -- and apply them to an httplib2.Http object
+http = httplib2.Http()
+http = credentials.authorize(http)
+
+#--- now any HTTP request made with http will be authorized with these Credentials
+
+#-------------- With Decorator --------------------------
+
+from apiclient.discovery import build
+
+decorator = OAuth2Decorator (
+         # client_id and client_secret are provided the resource_server
+         # when 3rd_party_app_aka_client registers it
+         client_id     = 'CLIENT_ID_HERE',
+         client_secret = 'CLIENT_SECRET_HERE,
+
+         redirect_uri  = 'https://.../oauth2callback',
+         scope         = 'https://.../todolist',
+         user_agent    = 'great-app/1.0'
+)
+
+http = httplib2.Http(memcache)
+
+service = discovery.build ('todolist', 'v1', http=http)
+
+class MainHandler(webapp.RequestHandler):
+  #--- interface to use: oauth_aware
+  @decorator.oauth_aware
+  def get(self):
+    if decorator.has_credentials():
+      http = decorator.http()
+      todoList = service.todolist.list()
+    else:
+      #--- get the credentials
+      link = decorator.authorize_url()
+
+
+
+
+
+
