@@ -1,5 +1,9 @@
 OAuth2.0 -- Authorization framework
 
+Ref:
+http://tools.ietf.org/html/rfc6749
+https://developers.google.com/api-client-library/python/guide/aaa_oauth#oauth
+
 Entities: [ 3rd_party_app_aka_client, 
             HTTP_service_aka_resource_server, 
             resource_owner,
@@ -50,7 +54,32 @@ Entities: [ 3rd_party_app_aka_client,
      |        |<-(F)--- Protected Resource ---|               |
      +--------+                               +---------------+
      
-     
+     (A)  The client requests authorization from the resource owner.  The
+        authorization request can be made directly to the resource owner
+        (as shown), or preferably indirectly via the authorization
+        server as an intermediary.
+
+   (B)  The client receives an authorization grant, which is a
+        credential representing the resource owner's authorization,
+        expressed using one of four grant types (authorization code, implicit, 
+        resource owner password credentials, and client credentials) or
+        using an extension grant type.  
+        The authorization grant type depends on the method used by the
+        client to request authorization and the types supported by the
+        authorization server.
+
+   (C)  The client requests an access token by authenticating with the
+        authorization server and presenting the authorization grant.
+
+   (D)  The authorization server authenticates the client and validates
+        the authorization grant, and if valid, issues an access token.
+        
+   (E) The client requests the protected resource from the resource
+        server and authenticates by presenting the access token.
+
+   (F)  The resource server validates the access token, and if valid,
+        serves the request.
+        
      
 
 Old-way:
